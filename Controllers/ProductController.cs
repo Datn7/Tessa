@@ -9,6 +9,7 @@ using Tessa.Controllers;
 using Tessa.Dtos;
 using Tessa.Entities;
 using Tessa.Errors;
+using Tessa.Helpers;
 using Tessa.Interfaces;
 using Tessa.Specifications;
 
@@ -35,11 +36,17 @@ namespace Tessa.Properties
         }
 
         [HttpGet]
-        public async Task<ActionResult<IReadOnlyList<ProductToReturnDto>>> GetProducts()
+        public async Task<ActionResult<Pagination<ProductToReturnDto>>> GetProducts([FromQuery]ProductSpecParams productParams)
         {
-            var spec = new ProductsWithTypesAndBrandsSpecification();
+            var spec = new ProductsWithTypesAndBrandsSpecification(productParams);
+
+            var countSpec = new ProductWithFiltersForCountSpecification(productParams);
+
+            var totalItems = await productsRepo.CountAsync(countSpec);
 
             var products = await productsRepo.ListAsync(spec);
+
+            var data = mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductToReturnDto>>(products);
 
             /*
                   return products.Select(product => new ProductToReturnDto
@@ -54,7 +61,7 @@ namespace Tessa.Properties
             }).ToList();
              */
 
-            return Ok(mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductToReturnDto>>(products));
+            return Ok(new Pagination<ProductToReturnDto>(productParams.PageIndex, productParams.PageSize, totalItems, data));
         }
 
         [HttpGet("{id}")]
