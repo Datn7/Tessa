@@ -12,9 +12,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.OpenApi.Models;
 using Tessa.Data;
+using Tessa.Errors;
+using Tessa.Exstensions;
 using Tessa.Helpers;
 using Tessa.Interfaces;
+using Tessa.Middleware;
 
 namespace Tessa
 {
@@ -31,9 +35,12 @@ namespace Tessa
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            services.AddScoped<IProductRepository, ProductRepository>();
-            services.AddScoped(typeof(IGenericRepository<>), (typeof(GenericRepository<>)));
+            services.AddApplicationServices();
+            services.AddSwaggerDocumentation();
             services.AddAutoMapper(typeof(MappingProfiles));
+        
+
+           
 
             services.AddDbContext<StoreContext>(x =>
             {
@@ -44,10 +51,16 @@ namespace Tessa
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
+            /*
+              if (env.IsDevelopment())
+             {
+                 app.UseDeveloperExceptionPage();
+             }
+             */
+
+            app.UseMiddleware<ExceptionMiddleware>();
+
+            app.UseStatusCodePagesWithReExecute("/errors/{0}");
 
             app.UseHttpsRedirection();
 
@@ -56,6 +69,8 @@ namespace Tessa
             app.UseStaticFiles();
 
             app.UseAuthorization();
+
+            app.UseSwaggerDocumentation();
 
             app.UseEndpoints(endpoints =>
             {

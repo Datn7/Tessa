@@ -5,16 +5,16 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Tessa.Controllers;
 using Tessa.Dtos;
 using Tessa.Entities;
+using Tessa.Errors;
 using Tessa.Interfaces;
 using Tessa.Specifications;
 
 namespace Tessa.Properties
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class ProductController : ControllerBase
+    public class ProductController : BaseApiController
     {
         private readonly IGenericRepository<Product> productsRepo;
         private readonly IGenericRepository<ProductBrand> productBrandRepo;
@@ -58,6 +58,8 @@ namespace Tessa.Properties
         }
 
         [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
         public async Task<ActionResult<ProductToReturnDto>> GetProduct(int id)
         {
 
@@ -77,6 +79,9 @@ namespace Tessa.Properties
                   ProductType = product.ProductType.Name
               };
              */
+
+            if (product == null) return NotFound(new ApiResponse(404));
+
             return mapper.Map<Product, ProductToReturnDto>(product);
         }
 
