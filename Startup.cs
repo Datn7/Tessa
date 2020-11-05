@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using StackExchange.Redis;
 using Tessa.Data;
 using Tessa.Errors;
 using Tessa.Exstensions;
@@ -38,6 +39,13 @@ namespace Tessa
             services.AddApplicationServices();
             services.AddSwaggerDocumentation();
             services.AddAutoMapper(typeof(MappingProfiles));
+
+            services.AddSingleton<IConnectionMultiplexer>(c =>
+            {
+                var configuration = ConfigurationOptions.Parse(Configuration.GetConnectionString("Redis"), true);
+                return ConnectionMultiplexer.Connect(configuration);
+            });
+
             services.AddCors(opt =>
             {
                 opt.AddPolicy("CorsPolicy", policy =>
