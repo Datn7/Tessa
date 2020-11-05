@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Tessa.Data;
 using Tessa.Errors;
 using Tessa.Interfaces;
+using Tessa.Services;
 
 namespace Tessa.Exstensions
 {
@@ -17,6 +18,7 @@ namespace Tessa.Exstensions
 
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<IBasketRepository, BasketRepository>();
+            services.AddScoped<ITokenService, TokenService>();
             services.AddScoped(typeof(IGenericRepository<>), (typeof(GenericRepository<>)));
             services.Configure<ApiBehaviorOptions>(options =>
             {

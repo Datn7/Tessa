@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using StackExchange.Redis;
 using Tessa.Data;
+using Tessa.Data.IdentityContext;
 using Tessa.Errors;
 using Tessa.Exstensions;
 using Tessa.Helpers;
@@ -37,6 +38,7 @@ namespace Tessa
         {
             services.AddControllers();
             services.AddApplicationServices();
+            services.AddIdentityServices(Configuration);
             services.AddSwaggerDocumentation();
             services.AddAutoMapper(typeof(MappingProfiles));
 
@@ -57,6 +59,11 @@ namespace Tessa
             services.AddDbContext<StoreContext>(x =>
             {
                 x.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
+            });
+
+            services.AddDbContext<AppIdentityDbContext>(x =>
+            {
+                x.UseSqlServer(Configuration.GetConnectionString("IdentityConnection"));
             });
         }
 
@@ -81,6 +88,8 @@ namespace Tessa
             app.UseStaticFiles();
 
             app.UseCors("CorsPolicy");
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 
